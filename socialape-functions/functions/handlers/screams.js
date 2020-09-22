@@ -1,4 +1,4 @@
-const { db } = require("../util/admin");
+const { db,admin } = require("../util/admin");
 
 exports.getAllScreams = (req, res) => {
     db.collection("screams")
@@ -19,6 +19,7 @@ exports.getAllScreams = (req, res) => {
 
 exports.createScreams = (req, res) => {
     const newScream = {
+        
         body: req.body.body,
         userHandle: req.user.handle,
         imageUrl : req.user.imageUrl,
@@ -204,3 +205,62 @@ exports.likeScream = (req, res) => {
         return res.status(500).json({ error : err.message});
     })
 }
+
+exports.createScreamWithPhoto = (req, res) => {
+    const BusBoy = require("busboy");
+    const path = require("path");
+    const os = require("os");
+    const fs = require("fs");
+
+    const busboy = new BusBoy({ headers: req.headers });
+
+    let ImageFileName;
+    let ImageToBeUploaded = {};
+
+    busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
+        if (mimetype !== "image/png" && mimetype !== "image/jpeg") {
+            res.status(400).json({
+                error: "Wrong file type",
+            });
+        }
+
+        const ImageExtention = filename.split(".")[
+            filename.split(".").length - 1
+        ];
+        ImageFileName = `${Math.round(
+            Math.random() * 100000000000
+        )}.${ImageExtention}`;
+        const filepath = path.join(os.tmpdir(), ImageFileName);
+        ImageToBeUploaded = { filepath, mimetype };
+        file.pipe(fs.createWriteStream(filepath));
+    });
+    busboy.on("finish", () => {
+        admin
+            .storage()
+            .bucket()
+            .upload(ImageToBeUploaded.filepath, {
+                resumable: false,
+                metadata: {
+                    metadata: {
+                        contentType: ImageToBeUploaded.mimetype,
+                    },
+                },
+            })
+            .then(() => {
+                const screamImage = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${ImageFileName}?alt=media`;
+                return db.doc(`/screams/${req.params.screamId}`).update({ screamImage });
+            })
+            .then(() => {
+                return res.json({
+                    message: "Image Uploaded Successfully",
+                });
+            })
+            .catch((err) => {
+                console.log(err);
+                return res.status(500).json({
+                    error: "image upload failed",
+                });
+            });
+    });
+    busboy.end(req.rawBody);
+};

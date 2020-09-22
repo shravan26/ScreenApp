@@ -7,7 +7,6 @@ const {
     reduceUserDetails,
 } = require("../util/validators");
 const { admin } = require("../util/admin");
-const { user } = require("firebase-functions/lib/providers/auth");
 firebase.initializeApp(config);
 
 exports.signup = (req, res) => {
@@ -68,7 +67,7 @@ exports.signup = (req, res) => {
                 });
             } else {
                 return res.status(400).json({
-                    error: err.code,
+                    error: err.message,
                 });
             }
         });
@@ -98,7 +97,7 @@ exports.login = (req, res) => {
                 return res.status(403).json({
                     general: "Wrong credentials, please try again",
                 });
-            } else return res.status(500).json({ error: err.message });
+            } else return res.status(500).json({ message : "Please make sure to login with the correct credentials" });
         });
 };
 

@@ -1,7 +1,5 @@
-const { user } = require("firebase-functions/lib/providers/auth");
-
 const isEmpty = (string) => {
-    if (string.trim() === "") return true;
+    if (string.trim() === '') return true;
     else return false;
 };
 const isEmail = (string) => {
@@ -22,8 +20,8 @@ exports.validateSignUpData = (data) => {
     if (isEmpty(data.password)) {
         errors.password = "Must not be empty";
     }
-    if (data.password !== data.confirmPassword) {
-        errors.passowrd = "Passwords must match";
+    if (isEmpty(data.confirmPassword) && data.password !== data.confirmPassword) {
+        errors.confirmPassword = "Passwords must match";
     }
     if (isEmpty(data.handle)) {
         errors.handle = "Must not be empty";

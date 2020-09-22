@@ -4,6 +4,7 @@ const app = express();
 const {
     getAllScreams,
     createScreams,
+    createScreamWithPhoto,
     getScream,
     commentOnScream,
     deleteScream,
@@ -21,7 +22,11 @@ const {
 } = require("./handlers/users");
 const { FBAuth } = require("./middleware/auth");
 const { db } = require("./util/admin");
+const cors = require("cors");
 
+
+//Middleware
+app.use(cors());
 //Screams Route
 
 app.get("/screams", getAllScreams);
@@ -31,7 +36,7 @@ app.delete("/scream/:screamId", FBAuth, deleteScream);
 app.get("/scream/:screamId/like", FBAuth, likeScream);
 app.get("/scream/:screamId/unlike", FBAuth, unlikeScream);
 app.post("/scream/:screamId/comment", FBAuth, commentOnScream);
-
+app.post('/scream/:screamId/upload', FBAuth, createScreamWithPhoto);
 //Users Routes
 
 app.post("/signup", signup);
@@ -125,7 +130,7 @@ exports.onUserImageChange = functions
                 .get()
                 .then((data) => {
                     data.forEach((doc) => {
-                        const scream = db.doc(`/screams/${doc.screamId}`);
+                        const scream = db.doc(`/screams/${doc.id}`);
                         batch.update(scream, {
                             imageUrl: change.after.data().imageUrl,
                         });
