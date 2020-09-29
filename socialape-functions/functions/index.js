@@ -10,6 +10,8 @@ const {
     deleteScream,
     likeScream,
     unlikeScream,
+    getNewestScreams,
+    getOldestScreams
 } = require("./handlers/screams");
 const {
     signup,
@@ -30,6 +32,8 @@ app.use(cors());
 //Screams Route
 
 app.get("/screams", getAllScreams);
+app.get('/screams/new',getNewestScreams);
+app.get('/screams/old',getOldestScreams);
 app.post("/scream", FBAuth, createScreams);
 app.get("/scream/:screamId", getScream);
 app.delete("/scream/:screamId", FBAuth, deleteScream);
@@ -132,7 +136,7 @@ exports.onUserImageChange = functions
                     data.forEach((doc) => {
                         const scream = db.doc(`/screams/${doc.id}`);
                         batch.update(scream, {
-                            imageUrl: change.after.data().imageUrl,
+                            userImage: change.after.data().imageUrl,
                         });
                     });
                     batch.commit();
